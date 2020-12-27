@@ -42,6 +42,13 @@ namespace Guarneri{
 		r32
 	};
 
+	enum class MaterialType
+	{
+		SCATTER,
+		REFLECTION,
+		REFRACTION
+	};
+
 #ifdef OPAQUE
 #undef OPAQUE
 #endif

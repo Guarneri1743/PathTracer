@@ -120,7 +120,7 @@ namespace Guarneri
 
 		static Color sample_material(Scene& scene, const std::shared_ptr<Material>& mat, const Ray& ray, const RaytraceResult& prev_ret);
 
-		static Color path_trace(const Ray& ray, Scene& scene, const RaytraceResult& prev_ret, const int& depth);
+		static Color path_trace(const Ray& ray, Scene& scene, int depth);
 
 		static void path_trace_tile(FrameTile& tile, Scene& scene);
 
@@ -131,13 +131,13 @@ namespace Guarneri
 		static void kick_off(Scene& scene);
 	};
 
-	const uint32_t PathTracer::MAX_DEPTH = 32;
+	const uint32_t PathTracer::MAX_DEPTH = 5;
 
 	const uint32_t PathTracer::TILE_SIZE = 4;
 
 	const uint32_t PathTracer::TILE_TASK_SIZE = 1;
 
-	uint32_t PathTracer::sample_size = 1;
+	uint32_t PathTracer::sample_size = 128;
 
 	std::unique_ptr<RawBuffer<color_bgra>> PathTracer::framebuffer;
 
@@ -204,56 +204,107 @@ namespace Guarneri
 
 	Color PathTracer::sample_material(Scene& scene, const std::shared_ptr<Material>& mat, const Ray& ray, const RaytraceResult& ret)
 	{
-		Color c;
-		for (auto& light : scene.point_lights)
-		{
-			auto lpos = light.position;
-			auto l = (lpos - ret.pos).normalized();
-			auto v = -ray.direction.normalized();
-			auto n = ret.normal.normalized();
-			auto h = (l + v).normalized();
-			auto ndl = std::max(Vector3::dot(n, l), 0.0f);
-			auto ndh = std::max(Vector3::dot(n, h), 0.0f);
-
-			auto tint = mat->get_float4(tint_color_prop);
-			auto d = light.diffuse * ndl * tint;
-			auto s = light.specular * std::pow(ndh, mat->get_float(glossiness_prop));
-
-			float distance = Vector3::length(light.position, ret.pos);
-			float atten = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-
-			c += (light.ambient + d + s) * atten * light.intensity;
-		}
-		
-		return c;
+		auto emission = mat->get_float4(emission_prop);
+		return emission;
 	}
 
-	Color PathTracer::path_trace(const Ray& ray, Scene& scene, const RaytraceResult& prev_ret, const int& depth)
+	inline static float rand01()
+	{
+		return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	}
+
+	Color PathTracer::path_trace(const Ray& ray, Scene& scene, int depth)
 	{
 		auto ret = scene.intersect(ray);
 
-		if (ret.hit)
+		if (!ret.hit)
+		{
+			return Color::BLACK;
+		}
+		
+		auto tint = Color(ret.material->get_float4(tint_color_prop));
+		Color emission = sample_material(scene, ret.material, ray, ret);
+
+		if (++depth > MAX_DEPTH)
+		{
+			float max_c = std::max(tint.r, std::max(tint.g, tint.b));
+			if (rand01() < max_c)
+			{
+				tint /= max_c;
+				return emission;
+			}
+			else
+			{
+				return emission;
+			}
+		}
+		
+		auto d = ray.direction;
+		auto n = ret.normal;
+		auto nl = Vector3::dot(n, d) < 0.0f ? n : -n;
+		auto refl = d - 2.0f * n * Vector3::dot(n, d);
+		auto reflect_ray = Ray(ret.pos, refl);
+
+		if (ret.material->material_type == MaterialType::REFRACTION)
+		{
+			// refract
+			bool into = Vector3::dot(n, nl) > 0.0f;
+			float nc = 1.0f; 
+			float nt = 1.5f;
+			float nnt = into ? (nc / nt) : (nt / nc);
+			float ddn = Vector3::dot(nl, d);
+			float cos2t = 1.0f - nnt * nnt * (1.0f - ddn * ddn);
+
+			if (cos2t < 0.0f)
+			{
+				return emission + tint * path_trace(reflect_ray, scene, depth);
+			}
+				
+			auto tdir = (d * nnt - n * ((into ? 1.0f : -1.0f) * (ddn * nnt + std::sqrt(cos2t)))).normalized();
+			float a = nt - nc;
+			float b = nt + nc;
+			float r0 = (a * a) / (b * b);
+			float c = 1.0f - (into ? -ddn : Vector3::dot(tdir, n));
+			float re = r0 + (1.0f - r0) * c * c * c * c * c;
+			float tr = 1.0f - re;
+			float p = 0.25f + 0.5f * re;
+			float rp = re / p;
+			float tp = tr / (1.0f - p);
+
+			auto tray = Ray(ret.pos, tdir);
+			auto refr_c = path_trace(tray, scene, depth);
+			auto refl_c = path_trace(reflect_ray, scene, depth);
+			if (depth <= 2)
+			{
+				return emission + tint * (refr_c * tr + refl_c * re);
+			}
+			else
+			{
+				if (rand01() < p)
+				{
+					return emission + tint * refl_c * rp;
+				}
+				else
+				{
+					return emission + tint * refr_c * tp;
+				}
+			}
+		}
+		else if (ret.material->material_type == MaterialType::REFLECTION)
 		{
 			float reflectiveness = ret.material->get_float(reflectiveness_prop);
-
-			Color color = sample_material(scene, ret.material, ray, ret);
-
-			color = color * (1.0f - reflectiveness);
-
-			if (reflectiveness > 0.0f && depth < MAX_DEPTH)
-			{
-				// reflect
-				auto l = ray.direction;
-				auto ndl = Vector3::dot(ret.normal, l);
-				auto refl = -2.0f * ret.normal * ndl + l;
-				auto reflect_ray = Ray(ret.pos, refl);
-				color = color + reflectiveness * path_trace(reflect_ray, scene, ret, depth + 1);
-			}
-			
-			return Color::saturate(color);
+			return emission * (1.0f - reflectiveness) + tint * reflectiveness * path_trace(reflect_ray, scene, depth);
 		}
-
-		return Color::BLACK;
+		else
+		{
+			float r1 = 2.0f * PI * rand01(), r2 = rand01(), r2s = std::sqrt(r2);
+			auto w = nl;
+			auto u = (Vector3::cross((std::abs(w.x) > 0.1f ? Vector3(0.0f, 1.0f, 0.0f) : Vector3(1.0f, 0.0f, 0.0f)), w)).normalized();
+			auto v = Vector3::cross(w, u);
+			auto dir = (u * std::cos(r1) * r2s + v * std::sin(r1) * r2s + w * std::sqrt(1.0f - r2)).normalized();
+			auto sr = Ray(ret.pos, dir);
+			return emission + tint * path_trace(sr, scene, depth);
+		}
 	}
 
 	void PathTracer::path_trace_tile(FrameTile& tile, Scene& scene)
@@ -266,27 +317,22 @@ namespace Guarneri
 				Color color = Color::BLACK;
 				for (uint32_t s = 0; s < sample_size; s++)
 				{
-					/*float ru = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					float r1 = 2.0f * rand01() - 1.0f;
+					float r2 = 2.0f * rand01() - 1.0f;
 
-					float rv = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					r1 *= 0.25f;
+					r2 *= 0.25f;
 
-					ru = ru * 2.0f - 1.0f;
-
-					rv = rv * 2.0f - 1.0f;
-
-					ru *= 0.0f;
-
-					rv *= 0.0f;*/
-
-					float u = ((float)col + 0.5f) / (float)(Window().width - 1) - 0.5f;
-
-					float v = ((float)row + 0.5f) / (float)(Window().height - 1) - 0.5f;
+					float u = ((float)col + 0.5f + r1) / (float)(Window().width - 1) - 0.5f;
+					float v = ((float)row + 0.5f + r2) / (float)(Window().height - 1) - 0.5f;
 
 					Ray ray(scene.main_cam->position, Vector3::normalize(v * scene.main_cam->up + u * scene.main_cam->right + fov * scene.main_cam->forward));
-
-					color += path_trace(ray, scene, RaytraceResult(), 0);
+					int depth = 0;
+					color += path_trace(ray, scene, depth);
 				}
 				color /= (float)sample_size;
+				color = color / (color + Color::WHITE);
+				color = Color::pow(color, 1.0f / 2.2f);
 				framebuffer->write(row, col, Color::encode_bgra(color));
 			}
 		}

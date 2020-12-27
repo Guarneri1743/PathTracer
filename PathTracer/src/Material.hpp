@@ -11,6 +11,7 @@ namespace Guarneri
 		std::unordered_map<property_name, Vector4> name2float4;
 		std::unordered_map<property_name, int> name2int;
 		std::unordered_map<property_name, std::shared_ptr<Texture>> name2tex;
+		MaterialType material_type;
 
 	public:
 		Material();
