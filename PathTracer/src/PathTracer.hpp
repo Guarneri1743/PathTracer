@@ -137,7 +137,7 @@ namespace Guarneri
 
 	const uint32_t PathTracer::TILE_TASK_SIZE = 1;
 
-	uint32_t PathTracer::sample_size = 128;
+	uint32_t PathTracer::sample_size = 256;
 
 	std::unique_ptr<RawBuffer<color_bgra>> PathTracer::framebuffer;
 
@@ -239,10 +239,10 @@ namespace Guarneri
 			}
 		}
 		
-		auto d = ray.direction;
-		auto n = ret.normal;
+		auto d = ray.direction.normalized();
+		auto n = ret.normal.normalized();
 		auto nl = Vector3::dot(n, d) < 0.0f ? n : -n;
-		auto refl = d - 2.0f * n * Vector3::dot(n, d);
+		auto refl = (d - 2.0f * n * Vector3::dot(n, d)).normalized();
 		auto reflect_ray = Ray(ret.pos, refl);
 
 		if (ret.material->material_type == MaterialType::REFRACTION)
@@ -250,12 +250,12 @@ namespace Guarneri
 			// refract
 			bool into = Vector3::dot(n, nl) > 0.0f;
 			float nc = 1.0f; 
-			float nt = 1.5f;
+			float nt = 1.52f;
 			float nnt = into ? (nc / nt) : (nt / nc);
 			float ddn = Vector3::dot(nl, d);
-			float cos2t = 1.0f - nnt * nnt * (1.0f - ddn * ddn);
+			float cos2t;
 
-			if (cos2t < 0.0f)
+			if ((cos2t = 1.0f - nnt * nnt * (1.0f - ddn * ddn)) < 0.0f)
 			{
 				return emission + tint * path_trace(reflect_ray, scene, depth);
 			}
@@ -272,21 +272,20 @@ namespace Guarneri
 			float tp = tr / (1.0f - p);
 
 			auto tray = Ray(ret.pos, tdir);
-			auto refr_c = path_trace(tray, scene, depth);
-			auto refl_c = path_trace(reflect_ray, scene, depth);
+
 			if (depth <= 2)
 			{
-				return emission + tint * (refr_c * tr + refl_c * re);
+				return emission + tint * (path_trace(tray, scene, depth) * tr + path_trace(reflect_ray, scene, depth) * re);
 			}
 			else
 			{
 				if (rand01() < p)
 				{
-					return emission + tint * refl_c * rp;
+					return emission + tint * path_trace(reflect_ray, scene, depth) * rp;
 				}
 				else
 				{
-					return emission + tint * refr_c * tp;
+					return emission + tint * path_trace(tray, scene, depth) * tp;
 				}
 			}
 		}
@@ -328,9 +327,9 @@ namespace Guarneri
 
 					Ray ray(scene.main_cam->position, Vector3::normalize(v * scene.main_cam->up + u * scene.main_cam->right + fov * scene.main_cam->forward));
 					int depth = 0;
-					color += path_trace(ray, scene, depth);
+					color += path_trace(ray, scene, depth) / (float)sample_size;
 				}
-				color /= (float)sample_size;
+				color = Color::saturate(color);
 				color = color / (color + Color::WHITE);
 				color = Color::pow(color, 1.0f / 2.2f);
 				framebuffer->write(row, col, Color::encode_bgra(color));
