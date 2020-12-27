@@ -90,6 +90,7 @@ namespace Guarneri
 	const property_name shadowmap_prop = 21; // "shadowmap";
 
 	const property_name tint_color_prop = 30;
+	const property_name reflectiveness_prop = 31;
 
 
 	// statistics

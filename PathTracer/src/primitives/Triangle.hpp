@@ -23,6 +23,7 @@ namespace Guarneri
 		static float area_double(const Vector2& v1, const Vector2& v2, const Vector2& v3);
 		static float area_double(const Vector3& v1, const Vector3& v2, const Vector3& v3);
 		static float area(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+		bool intersect(const Ray& ray, const float& distance, const Matrix4x4& model, Vector4& uvw);
 		Vertex& operator[](const uint32_t i);
 		const Vertex& operator[](const uint32_t i) const;
 		std::string str() const;
@@ -229,6 +230,51 @@ namespace Guarneri
 		auto e1 = v2 - v1;
 		auto e2 = v3 - v1;
 		return Vector3::cross(e1, e2).magnitude() / 2.0f;
+	}
+
+	bool Triangle::intersect(const Ray& ray, const float& distance, const Matrix4x4& model, Vector4& uvw)
+	{
+		Vector3 a = (model * vertices[0].position).xyz();
+		Vector3 b = (model * vertices[1].position).xyz();
+		Vector3 c = (model * vertices[2].position).xyz();
+
+		Vector3 ab = b - a;
+		Vector3 ac = c - a;
+		Vector3 p = ray.origin;
+		Vector3 q = ray.origin + ray.direction * distance;
+		Vector3 qp = p - q;
+
+		Vector3 n = Vector3::cross(ab, ac);
+
+		float d = Vector3::dot(qp, n);
+		if (d <= 0.0f) return false;
+
+		Vector3 ap = p - a;
+		float t = Vector3::dot(ap, n);
+
+		if (t < 0.0f) return false;
+		if (t > d) return false;
+
+		Vector3 e = Vector3::cross(qp, ap);
+		float v = Vector3::dot(ac, e);
+		if (v < 0.0f || v > d) return false;
+		float w = -Vector3::dot(ab, e);
+		if (w < 0.0f || v + w > d) return false;
+
+		float ood = 1.0f / d;
+
+		t *= ood;
+		v *= ood;
+		w *= ood;
+
+		float u = 1.0f - v - w;
+
+		uvw.x = u;
+		uvw.y = v;
+		uvw.z = w;
+		uvw.w = t * distance;
+
+		return true;
 	}
 
 	Vertex& Triangle::operator[](const uint32_t i)

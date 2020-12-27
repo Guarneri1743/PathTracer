@@ -45,6 +45,8 @@ namespace Guarneri
 		static float dot(const Vector3& lhs, const Vector3& rhs);
 		static Vector3 cross(const Vector3& lhs, const Vector3& rhs);
 		static float magnitude(const Vector3& vector);
+		static float magnitude_sqr(const Vector3& vector);
+		static float length_sqr(const Vector3& a, const Vector3& b);
 		static float length(const Vector3& a, const Vector3& b);
 		static Vector3 max(const Vector3& a, const Vector3& b);
 		static Vector3 min(const Vector3& a, const Vector3& b);
@@ -298,9 +300,19 @@ namespace Guarneri
 		return sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 	}
 
+	float Vector3::magnitude_sqr(const Vector3& vector)
+	{
+		return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+	}
+
 	float Vector3::length(const Vector3& a, const Vector3& b)
 	{
 		return magnitude(a - b);
+	}
+
+	float Vector3::length_sqr(const Vector3& a, const Vector3& b)
+	{
+		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
 
 	Vector3 Vector3::saturate(const Vector3& vec)

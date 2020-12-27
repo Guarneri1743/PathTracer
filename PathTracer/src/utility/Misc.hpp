@@ -31,6 +31,16 @@ namespace Guarneri {
 		ColorSpace color_space;
 	};
 
+	struct RaytraceResult
+	{
+		std::shared_ptr<Material> material;
+		Vector3 pos;
+		Vector3 normal;
+		float t;
+		float normalized_t;
+		bool hit;
+	};
+
 	static MiscParameter misc_param;
 
 	InputManager& InputMgr() {
