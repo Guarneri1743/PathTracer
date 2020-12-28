@@ -7,7 +7,7 @@ bool auto_rotation = false;
 
 int main()
 {
-	PathTracer::prepare(1024, 1024, "PathTracer");
+	PathTracer::prepare(512, 512, "PathTracer");
 
 	Scene demo_scene;
 
@@ -172,20 +172,20 @@ int main()
 	sphere2->material = sphere2_mat;
 
 	auto light_mat = std::make_shared<Material>();
-	light_mat->set_float4(emission_prop, 3.0f * Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	light_mat->set_float4(emission_prop, 12.0f * Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	light_mat->set_float4(tint_color_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	light_mat->material_type = MaterialType::SCATTER;
 
-	auto pl1 = new Sphere(Vector3(443.0f, 548.8f, 127.0f), 30.0f);
+	auto pl1 = new Sphere(Vector3(443.0f, 548.8f - 10.0f, 127.0f), 10.0f);
 	pl1->material = light_mat;
 
-	auto pl2 = new Sphere(Vector3(443.0f, 548.8f, 432.0f), 30.0f);
+	auto pl2 = new Sphere(Vector3(443.0f, 548.8f - 10.0f, 432.0f), 10.0f);
 	pl2->material = light_mat;
 
-	auto pl3 = new Sphere(Vector3(113.0f, 548.8f, 432.0f), 30.0f);
+	auto pl3 = new Sphere(Vector3(113.0f, 548.8f - 10.0f, 432.0f), 10.0f);
 	pl3->material = light_mat;
 
-	auto pl4 = new Sphere(Vector3(113.0f, 548.8f, 127.0f), 30.0f);
+	auto pl4 = new Sphere(Vector3(113.0f, 548.8f - 10.0f, 127.0f), 10.0f);
 	pl4->material = light_mat;
 
 

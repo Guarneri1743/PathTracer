@@ -137,7 +137,7 @@ namespace Guarneri
 
 	const uint32_t PathTracer::TILE_TASK_SIZE = 1;
 
-	uint32_t PathTracer::sample_size = 256;
+	uint32_t PathTracer::sample_size = 4;
 
 	std::unique_ptr<RawBuffer<color_bgra>> PathTracer::framebuffer;
 
@@ -329,9 +329,10 @@ namespace Guarneri
 					int depth = 0;
 					color += path_trace(ray, scene, depth) / (float)sample_size;
 				}
-				color = Color::saturate(color);
-				color = color / (color + Color::WHITE);
+				float exposure = 2.0f;
+				color = Color::WHITE - Color::exp(-color * exposure);
 				color = Color::pow(color, 1.0f / 2.2f);
+				color = Color::saturate(color);
 				framebuffer->write(row, col, Color::encode_bgra(color));
 			}
 		}
