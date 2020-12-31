@@ -1,4 +1,4 @@
 # CPU Path Tracer
 
-cornell(6000 sample)
-<img src="/screenshots/6000sample.jpg" width = "800" height = "600" alt="PT" align=center/>
+cornell(256 sample)
+<img src="/screenshots/256sample.png" width = "800" height = "800" alt="PT" align=center/>
