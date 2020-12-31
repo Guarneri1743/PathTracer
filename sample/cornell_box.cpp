@@ -7,7 +7,7 @@ bool auto_rotation = false;
 
 int main()
 {
-	PathTracer::prepare(512, 512, "PathTracer");
+	PathTracer::prepare(800, 800, "PathTracer");
 
 	Scene demo_scene;
 
@@ -167,7 +167,7 @@ int main()
 	auto sphere2_mat = std::make_shared<Material>();
 	sphere2_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	sphere2_mat->set_float4(tint_color_prop, Vector4(0.999f, 0.999f, 0.999f, 1.0f));
-	sphere2_mat->set_float(refractiveness_prop, 2.42f);
+	sphere2_mat->set_float(refractiveness_prop, 1.52f);
 	sphere2_mat->material_type = MaterialType::REFRACTION;
 	auto sphere2= new Sphere(Vector3(398.0f, 100.0f, 180.0f), 100.0f);
 	sphere2->material = sphere2_mat;
