@@ -91,7 +91,7 @@ namespace Guarneri
 
 	const property_name tint_color_prop = 30;
 	const property_name reflectiveness_prop = 31;
-
+	const property_name refractiveness_prop = 32;
 
 	// statistics
 	struct GraphicsStatistic

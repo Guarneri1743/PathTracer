@@ -12,8 +12,8 @@ int main()
 	Scene demo_scene;
 
 	// setup camera
-	demo_scene.main_cam->position = Vector3(278.0f, 273.0f, 1.0f);
-	demo_scene.main_cam->fov = 90.0f;
+	demo_scene.main_cam->position = Vector3(278.0f, 273.0f, -400.0f);
+	demo_scene.main_cam->fov = 60.0f;
 	demo_scene.main_cam->set_near(0.5f);
 	demo_scene.main_cam->lookat(demo_scene.main_cam->position + Vector3(0.0f, 0.0f, 1.0f));
 
@@ -103,7 +103,7 @@ int main()
 	ceiling_mat->set_float(reflectiveness_prop, 0.00f);
 	ceiling_mat->set_float(glossiness_prop, 0.00f);
 	ceiling_mat->set_float4(emission_prop, Vector4(0.1f, 0.1f, 0.05f, 1.0f));
-	ceiling_mat->set_float4(tint_color_prop, Vector4(1.0f, 1.0f, 0.8f, 1.0f));
+	ceiling_mat->set_float4(tint_color_prop, Vector4(0.8f, 0.8f, 0.8f, 1.0f));
 	ceiling_mat->material_type = MaterialType::SCATTER;
 	auto ceiling_model = Model::create(ceiling_verts, ceiling_indices, ceiling_mat);
 
@@ -111,7 +111,7 @@ int main()
 	floor_mat->set_float(reflectiveness_prop, 0.00f);
 	floor_mat->set_float(glossiness_prop, 0.00f);
 	floor_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-	floor_mat->set_float4(tint_color_prop, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	floor_mat->set_float4(tint_color_prop, Vector4(0.8f, 0.8f, 0.8f, 1.0f));
 	floor_mat->material_type = MaterialType::SCATTER;
 	auto floor_model = Model::create(floor_verts, floor_indices, floor_mat);
 
@@ -126,32 +126,32 @@ int main()
 	auto back_wall_mat = std::make_unique<Material>();
 	back_wall_mat->set_float(reflectiveness_prop, 0.00f);
 	back_wall_mat->set_float(glossiness_prop, 0.00f);
-	back_wall_mat->set_float4(emission_prop, Vector4(0.05f, 0.05f, 0.05f, 1.0f));
-	back_wall_mat->set_float4(tint_color_prop, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	back_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	back_wall_mat->set_float4(tint_color_prop, Vector4(0.8f, 0.8f, 0.8f, 1.0f));
 	back_wall_mat->material_type = MaterialType::SCATTER;
 	auto back_wall_model = Model::create(back_wall_verts, back_wall_indices, back_wall_mat);
 
 	auto front_wall_mat = std::make_unique<Material>();
 	front_wall_mat->set_float(reflectiveness_prop, 0.00f);
 	front_wall_mat->set_float(glossiness_prop, 0.00f);
-	front_wall_mat->set_float4(emission_prop, Vector4(0.05f, 0.05f, 0.05f, 1.0f));
-	front_wall_mat->set_float4(tint_color_prop, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	front_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	front_wall_mat->set_float4(tint_color_prop, Vector4(0.8f, 0.8f, 0.8f, 1.0f));
 	front_wall_mat->material_type = MaterialType::SCATTER;
 	auto front_wall_model = Model::create(front_wall_verts, front_wall_indices, front_wall_mat);
 
 	auto right_wall_mat = std::make_unique<Material>();
 	right_wall_mat->set_float(reflectiveness_prop, 0.00f);
 	right_wall_mat->set_float(glossiness_prop, 0.00f);
-	right_wall_mat->set_float4(emission_prop, Vector4(0.05f, 0.0f, 0.0f, 1.0f));
-	right_wall_mat->set_float4(tint_color_prop, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+	right_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	right_wall_mat->set_float4(tint_color_prop, Vector4(0.8f, 0.3f, 0.3f, 1.0f));
 	right_wall_mat->material_type = MaterialType::SCATTER;
 	auto right_wall_model = Model::create(right_wall_verts, right_wall_indices, right_wall_mat);
 
 	auto left_wall_mat = std::make_unique<Material>();
 	left_wall_mat->set_float(reflectiveness_prop, 0.00f);
 	left_wall_mat->set_float(glossiness_prop, 0.00f);
-	left_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.05f, 0.0f, 1.0f));
-	left_wall_mat->set_float4(tint_color_prop, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+	left_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	left_wall_mat->set_float4(tint_color_prop, Vector4(0.3f, 0.8f, 0.3f, 1.0f));
 	left_wall_mat->material_type = MaterialType::SCATTER;
 	auto left_wall_model = Model::create(left_wall_verts, left_wall_indices, left_wall_mat);
 
@@ -161,14 +161,15 @@ int main()
 	sphere1_mat->set_float(reflectiveness_prop, 1.0f);
 	sphere1_mat->set_float(glossiness_prop, 64.0f);
 	sphere1_mat->material_type = MaterialType::REFLECTION;
-	auto sphere1 = new Sphere(Vector3(126.0f, 80.0f, 428.5f), 80.0f);
+	auto sphere1 = new Sphere(Vector3(126.0f, 80.0f, 328.5f), 80.0f);
 	sphere1->material = sphere1_mat;
 
 	auto sphere2_mat = std::make_shared<Material>();
 	sphere2_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	sphere2_mat->set_float4(tint_color_prop, Vector4(0.999f, 0.999f, 0.999f, 1.0f));
+	sphere2_mat->set_float(refractiveness_prop, 2.42f);
 	sphere2_mat->material_type = MaterialType::REFRACTION;
-	auto sphere2= new Sphere(Vector3(368.0f, 100.0f, 451.0f), 100.0f);
+	auto sphere2= new Sphere(Vector3(368.0f, 100.0f, 280.0f), 100.0f);
 	sphere2->material = sphere2_mat;
 
 	auto light_mat = std::make_shared<Material>();
@@ -176,16 +177,17 @@ int main()
 	light_mat->set_float4(tint_color_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	light_mat->material_type = MaterialType::SCATTER;
 
-	auto pl1 = new Sphere(Vector3(443.0f, 548.8f - 10.0f, 127.0f), 10.0f);
+	float radius = 600.0f;
+	auto pl1 = new Sphere(Vector3(443.0f, 548.8f + radius - 10.0f, 127.0f), radius);
 	pl1->material = light_mat;
 
-	auto pl2 = new Sphere(Vector3(443.0f, 548.8f - 10.0f, 432.0f), 10.0f);
+	auto pl2 = new Sphere(Vector3(443.0f, 548.8f + radius - 10.0f, 432.0f), radius);
 	pl2->material = light_mat;
 
-	auto pl3 = new Sphere(Vector3(113.0f, 548.8f - 10.0f, 432.0f), 10.0f);
+	auto pl3 = new Sphere(Vector3(113.0f, 548.8f + radius - 10.0f, 432.0f), radius);
 	pl3->material = light_mat;
 
-	auto pl4 = new Sphere(Vector3(113.0f, 548.8f - 10.0f, 127.0f), 10.0f);
+	auto pl4 = new Sphere(Vector3(113.0f, 548.8f + radius - 10.0f, 127.0f), radius);
 	pl4->material = light_mat;
 
 
@@ -204,6 +206,7 @@ int main()
 	demo_scene.add(dynamic_cast<Primitive*>(pl4));
 
 	demo_scene.ray_max_distance = 2000.0f;
+	demo_scene.exposure = 0.4;
 
 	PathTracer::kick_off(demo_scene);
 	return 0;

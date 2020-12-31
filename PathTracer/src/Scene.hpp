@@ -13,6 +13,7 @@ namespace Guarneri
 		std::vector<Primitive*> prims;
 		std::unique_ptr<Camera> main_cam;
 		float ray_max_distance;
+		float exposure;
 
 	public:
 		Scene();
@@ -42,6 +43,7 @@ namespace Guarneri
 		main_light.diffuse = Color(1.0f, 0.8f, 0.8f, 1.0f);
 		main_light.ambient = Color(0.1f, 0.05f, 0.2f, 1.0f);
 		main_light.specular = Color(1.0f, 1.0f, 1.0f, 1.0f);
+		exposure = 1.0f;
 		main_cam = std::move(Camera::create(Vector3(5.0f, 5.0f, 5.0f), Window().aspect, 45.0f, 0.5f, 100.0f));
 		main_cam->lookat(Vector3::ZERO);
 		ray_max_distance = 10000.0f;
@@ -144,11 +146,10 @@ namespace Guarneri
 								auto c = verts[2].position.xyz();
 								auto ab = b - a;
 								auto ac = c - a;
-								auto n = Vector3::cross(ab, ac).normalized();
 								ret.t = uvwt.w;
 								ret.normalized_t = ret.t / ray_max_distance;
 								ret.pos = ray.origin + ray.direction * ret.t;
-								ret.normal = n;
+								ret.normal = Vector3::cross(ab, ac).normalized();
 								ret.material = mat;
 								near = uvwt.w;
 							}

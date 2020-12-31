@@ -53,20 +53,35 @@ namespace Guarneri
 
 	bool Sphere::intersect(const Ray& ray, Vector3& hit_pos, float& t, Vector3& normal)
 	{
-		auto v = ray.origin - center;
-		auto a0 = Vector3::magnitude_sqr(v) - radius * radius;
-		auto raydv = Vector3::dot(ray.direction, v);
-		if (raydv <= 0.0f)
+		auto op = center - ray.origin;
+		float eps = 1e-4;
+		float b = Vector3::dot(op, ray.direction);
+		float det = b * b - Vector3::dot(op, op) + radius * radius;
+		if (det < 0.0f)
 		{
-			auto discr = raydv * raydv - a0;
-			if (discr >= 0.0f)
-			{
-				t = -raydv - std::sqrt(discr);
-				hit_pos = ray.origin + ray.direction * t;
-				normal = (hit_pos - center).normalized();
-				return true;
-			}
+			t = 0.0f;
+			hit_pos = ray.origin + ray.direction * t;
+			normal = (hit_pos - center).normalized();
+			return false;
 		}
+		det = std::sqrt(det);
+		if (b - det > eps)
+		{
+			t = b - det;
+			hit_pos = ray.origin + ray.direction * t;
+			normal = (hit_pos - center).normalized();
+			return true;
+		}
+		if (b + det > eps)
+		{
+			t = b + det;
+			hit_pos = ray.origin + ray.direction * t;
+			normal = (hit_pos - center).normalized();
+			return true;
+		}
+		t = 0.0f;
+		hit_pos = ray.origin + ray.direction * t;
+		normal = (hit_pos - center).normalized();
 		return false;
 	}
 
