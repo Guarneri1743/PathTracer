@@ -142,7 +142,7 @@ int main()
 	auto right_wall_mat = std::make_unique<Material>();
 	right_wall_mat->set_float(reflectiveness_prop, 0.00f);
 	right_wall_mat->set_float(glossiness_prop, 0.00f);
-	right_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	right_wall_mat->set_float4(emission_prop, Vector4(0.2f, 0.05f, 0.05f, 1.0f));
 	right_wall_mat->set_float4(tint_color_prop, Vector4(0.8f, 0.3f, 0.3f, 1.0f));
 	right_wall_mat->material_type = MaterialType::SCATTER;
 	auto right_wall_model = Model::create(right_wall_verts, right_wall_indices, right_wall_mat);
@@ -150,7 +150,7 @@ int main()
 	auto left_wall_mat = std::make_unique<Material>();
 	left_wall_mat->set_float(reflectiveness_prop, 0.00f);
 	left_wall_mat->set_float(glossiness_prop, 0.00f);
-	left_wall_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	left_wall_mat->set_float4(emission_prop, Vector4(0.05f, 0.2f, 0.05f, 1.0f));
 	left_wall_mat->set_float4(tint_color_prop, Vector4(0.3f, 0.8f, 0.3f, 1.0f));
 	left_wall_mat->material_type = MaterialType::SCATTER;
 	auto left_wall_model = Model::create(left_wall_verts, left_wall_indices, left_wall_mat);
@@ -169,8 +169,15 @@ int main()
 	sphere2_mat->set_float4(tint_color_prop, Vector4(0.999f, 0.999f, 0.999f, 1.0f));
 	sphere2_mat->set_float(refractiveness_prop, 2.42f);
 	sphere2_mat->material_type = MaterialType::REFRACTION;
-	auto sphere2= new Sphere(Vector3(368.0f, 100.0f, 280.0f), 100.0f);
+	auto sphere2= new Sphere(Vector3(398.0f, 100.0f, 180.0f), 100.0f);
 	sphere2->material = sphere2_mat;
+
+	auto sphere3_mat = std::make_shared<Material>();
+	sphere3_mat->set_float4(emission_prop, Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	sphere3_mat->set_float4(tint_color_prop, Vector4(0.3f, 0.8f, 0.7f, 1.0f));
+	sphere3_mat->material_type = MaterialType::SCATTER;
+	auto sphere3 = new Sphere(Vector3(300.0f, 100.0f, 388.0f), 100.0f);
+	sphere3->material = sphere3_mat;
 
 	auto light_mat = std::make_shared<Material>();
 	light_mat->set_float4(emission_prop, 12.0f * Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -200,6 +207,7 @@ int main()
 	demo_scene.add(std::move(left_wall_model));
 	demo_scene.add(dynamic_cast<Primitive*>(sphere1));
 	demo_scene.add(dynamic_cast<Primitive*>(sphere2));
+	demo_scene.add(dynamic_cast<Primitive*>(sphere3));
 	demo_scene.add(dynamic_cast<Primitive*>(pl1));
 	demo_scene.add(dynamic_cast<Primitive*>(pl2));
 	demo_scene.add(dynamic_cast<Primitive*>(pl3));

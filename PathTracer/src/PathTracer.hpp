@@ -224,7 +224,7 @@ namespace Guarneri
 	float radical_inverse(int base, int i)
 	{
 		float digit, radical, inverse;
-		digit = radical = 1.0 / (float)base;
+		digit = radical = 1.0f / (float)base;
 		inverse = 0.0;
 		while (i)
 		{
