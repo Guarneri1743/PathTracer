@@ -145,7 +145,7 @@ namespace Guarneri
 
 	const uint32_t PathTracer::TILE_TASK_SIZE = 1;
 
-	const uint32_t PathTracer::SAMPLE_SIZE = 400;
+	const uint32_t PathTracer::SAMPLE_SIZE = 16;
 
 	std::unique_ptr<RawBuffer<color_bgra>> PathTracer::framebuffer;
 
